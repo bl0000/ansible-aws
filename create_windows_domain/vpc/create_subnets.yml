@@ -1,0 +1,53 @@
+---
+- name: Create Subnets within VPC
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    vpc_name: "windows_domain"
+    region: "eu-west-2"
+    public_subnet_cidr: "10.200.1.0/24"
+    private_subnet_cidr: "10.200.2.0/24"
+
+  tasks:
+    - name: Fetch VPC information
+      amazon.aws.ec2_vpc_net_info:
+        region: "{{ region }}"
+      register: vpcs_info
+
+    - name: Get VPC ID for "windows_domain"
+      set_fact:
+        vpc_id: "{{ item.vpc_id }}"
+      loop: "{{ vpcs_info.vpcs }}"
+      when: (item.tags.Name | default('No Name')) == 'windows_domain'
+    
+    - name: Create Public Subnet
+      ec2_vpc_subnet:
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ public_subnet_cidr }}"
+        region: "{{ region }}"
+        state: present
+        map_public: yes
+        resource_tags:
+          Name: "Public_Subnet"
+      register: public_subnet_created
+
+    - name: Debug Public Subnet ID
+      debug:
+        var: public_subnet_created.subnet.id
+
+    - name: Create Private Subnet
+      ec2_vpc_subnet:
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ private_subnet_cidr }}"
+        region: "{{ region }}"
+        state: present
+        map_public: no
+        resource_tags:
+          Name: "Private_Subnet"
+      register: private_subnet_created
+
+    - name: Debug Private Subnet ID
+      debug:
+        var: private_subnet_created.subnet.id
+

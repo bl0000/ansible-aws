@@ -1,0 +1,6 @@
+On Arch Linux:
+
+sudo pacman -S ansible ansible-core
+
+Install amazon.aws collection:
+ansible-galaxy collection install --force amazon.aws

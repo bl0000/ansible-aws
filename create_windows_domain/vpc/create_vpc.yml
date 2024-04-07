@@ -1,0 +1,28 @@
+---
+- name: Create a new VPC
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    vpc_cidr_block: "10.200.0.0/16" 
+    vpc_name: "windows_domain"
+    region: "eu-west-2"
+
+  tasks:
+    - name: Debug VPC Name
+      debug:
+        var: vpc_name
+
+    - name: Create VPC
+      amazon.aws.ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr_block }}"
+        region: "{{ region }}"
+        name: "{{ vpc_name }}"
+        tags:
+          Name: "{{ vpc_name }}"
+      register: vpc_created
+
+    - name: Print VPC ID
+      debug:
+        var: vpc_created.vpc.id

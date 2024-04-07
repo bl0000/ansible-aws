@@ -1,0 +1,3 @@
+# Dynamic inventory of all EC2 instances
+
+plugin: amazon.aws.aws_ec2

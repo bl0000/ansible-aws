@@ -1,0 +1,6 @@
+---
+- name: Create AWS Environment
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - include_playbook: vpc/create_vpc.yml
