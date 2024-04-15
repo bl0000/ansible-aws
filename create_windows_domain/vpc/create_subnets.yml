@@ -30,11 +30,7 @@
         map_public: yes
         resource_tags:
           Name: "Public_Subnet"
-      register: public_subnet_created
-
-    - name: Debug Public Subnet ID
-      debug:
-        var: public_subnet_created.subnet.id
+      register: public_subnet
 
     - name: Create Private Subnet
       ec2_vpc_subnet:
@@ -45,9 +41,26 @@
         map_public: no
         resource_tags:
           Name: "Private_Subnet"
-      register: private_subnet_created
+      register: private_subnet
 
-    - name: Debug Private Subnet ID
-      debug:
-        var: private_subnet_created.subnet.id
+    - name: Create IGW
+      ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: present
+        tags:
+          Name: "windomain_igw"
+      register: igw
 
+    - name: Create public RT
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        subnets:
+          - "{{ public_subnet.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        tags:
+          Name: "public_rt"
+    
