@@ -1,0 +1,22 @@
+---
+- name: Create keypair
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    region: "eu-west-2"
+    keypair_name: "windows_domain_keypair"
+
+  tasks:
+    - name: create a new ec2 key pair
+      amazon.aws.ec2_key:
+        name: "{{ keypair_name }}"
+        region: "{{ region }}"
+      register: keypair
+      
+    - copy: content="{{ keypair.key.private_key }}" dest=~/.ssh/{{ windows_domain_keypair }}.pem
+
+    - name: Change file permissions
+      ansible.builtin.file:
+        path: ~/.ssh/{{ windows_domain_keypair }}.pem
+        mode: '600'
