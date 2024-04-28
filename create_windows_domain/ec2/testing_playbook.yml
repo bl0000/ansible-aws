@@ -1,0 +1,16 @@
+---
+- name: Temp
+  hosts: all
+  vars:
+    #ansible_ssh_private_key_file: "~/.ssh/windows_domain_keypair.yml"
+
+  tasks:
+    - name: Print message
+      debug:
+        msg: Hello Ansible World
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "~/ansible-proof"
+        state: directory
+        mode: '0755'

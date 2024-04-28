@@ -1,0 +1,9 @@
+# Dynamic inventory of all EC2 instances
+
+plugin: amazon.aws.aws_ec2
+
+keyed_groups:
+
+  - key: tags.Name
+    prefix: tag_Name_
+    separator: ""
