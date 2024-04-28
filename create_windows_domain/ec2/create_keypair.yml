@@ -14,9 +14,9 @@
         region: "{{ region }}"
       register: keypair
       
-    - copy: content="{{ keypair.key.private_key }}" dest=~/.ssh/{{ windows_domain_keypair }}.pem
+    - copy: content="{{ keypair.key.private_key }}" dest=~/.ssh/{{ keypair_name }}.pem
 
     - name: Change file permissions
       ansible.builtin.file:
-        path: ~/.ssh/{{ windows_domain_keypair }}.pem
+        path: "~/.ssh/{{ keypair_name }}.pem"
         mode: '600'

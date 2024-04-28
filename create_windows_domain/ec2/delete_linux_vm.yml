@@ -1,12 +1,11 @@
 ---
-- name: Create Linux EC2 VM
+- name: Delete Linux EC2 VM
   hosts: localhost
   gather_facts: no
 
   vars:
     vpc_name: "windows_domain"
     region: "eu-west-2"
-    ec2_key_directory: "./"
 
   tasks:
     - name: Fetch VPC information
@@ -32,19 +31,7 @@
       loop: "{{ subnets_info.subnets }}"
       when: item.tags.Name == "Public_Subnet"
 
-    - name: Fetch SG information
-      amazon.aws.ec2_security_group_info:
-        filters:
-          vpc_id: "{{ vpc_id }}"
-      register: sg_info
-
-    - name: Get SG ID for Allow SSH
-      set_fact:
-        sg_id: "{{ item.group_id }}"
-      loop: "{{ sg_info.security_groups }}"
-      when: item.group_name == "Allow SSH"
-
-    - name: Create EC2 server
+    - name: Delete EC2 server
       amazon.aws.ec2_instance:
         name: "ansible_linux_test"
         image_id: ami-0b9932f4918a00c4f
@@ -52,9 +39,7 @@
         instance_type: t2.micro
         region: "{{ region }}"
         vpc_subnet_id: "{{ pub_subnet_id }}"
-        security_group: "{{ sg_id }}"
-        network:
-          assign_public_ip: true
-        key_name: windows_domain_keypair
+        state: terminated
         tags:
           Name: ansible_linux_test
+
