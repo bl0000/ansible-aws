@@ -39,3 +39,21 @@
         map_public: no
         resource_tags:
           Name: "Private_Subnet"
+
+    - name: Delete IGW
+      ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "windomain_igw"
+      register: igw
+
+    - name: Delete public RT
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "public_rt"
+

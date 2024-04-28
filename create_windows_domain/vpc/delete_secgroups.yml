@@ -1,5 +1,5 @@
 ---
-- name: Create SGs within VPC
+- name: Delete SGs within VPC
   hosts: localhost
   gather_facts: no
 
@@ -21,7 +21,7 @@
       loop: "{{ vpcs_info.vpcs }}"
       when: (item.tags.Name | default('No Name')) == 'windows_domain'
     
-    - name: Allow SSH SG
+    - name: Delete "Allow SSH" SG
       ec2_group:
         name: Allow SSH
         description: Allows SSH from anywhere
@@ -31,5 +31,5 @@
           - proto: tcp
             ports: 22
             cidr_ip: '0.0.0.0/0'
-        state: present
+        state: absent
       register: public_subnet
