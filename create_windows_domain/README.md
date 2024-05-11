@@ -1,4 +1,8 @@
-My first collection of playbooks - creates a Windows network within AWS.
+My first collection of playbooks - creates a Windows Test Environment within AWS. This contains a Domain Controller, Exchange Server and RDS Environment, with a public and private subnet, NAT Gateway and OpenVPN server.
+
+End goal:
+
+<img src="/images/Windows_Test_Environment_AWS.png">
 
 NOTE: Definitely need to streamline the defined variables to avoid repeating them!
 
