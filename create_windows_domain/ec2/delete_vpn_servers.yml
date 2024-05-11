@@ -1,0 +1,44 @@
+---
+- name: Delete Linux EC2 VM
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    vpc_name: "windows_domain"
+    region: "eu-west-2"
+
+  tasks:
+    - name: Fetch VPC information
+      amazon.aws.ec2_vpc_net_info:
+        region: "{{ region }}"
+      register: vpcs_info
+
+    - name: Get VPC ID for "windows_domain"
+      set_fact:
+        vpc_id: "{{ item.vpc_id }}"
+      loop: "{{ vpcs_info.vpcs }}"
+      when: (item.tags.Name | default('No Name')) == 'windows_domain'
+
+    - name: Fetch Subnet information
+      amazon.aws.ec2_vpc_subnet_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: subnets_info
+
+    - name: Find Public Subnet
+      set_fact:
+        pub_subnet_id: "{{ item.subnet_id }}"
+      loop: "{{ subnets_info.subnets }}"
+      when: item.tags.Name == "Public_Subnet"
+
+    - name: Delete EC2 server
+      amazon.aws.ec2_instance:
+        image_id: ami-0b9932f4918a00c4f
+        wait: yes
+        instance_type: t2.micro
+        region: "{{ region }}"
+        vpc_subnet_id: "{{ pub_subnet_id }}"
+        state: terminated
+        tags:
+          Role: vpn
+

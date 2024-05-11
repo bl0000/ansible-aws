@@ -1,0 +1,22 @@
+---
+- name: Configure OpenVPN
+  hosts: all
+
+  tasks:
+    - name: Download Github script
+    ansible.builtin.command: curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+
+    - name: Make script executable
+      ansible.builtin.command: chmod +x ~/openvpn-install.sh
+
+    - name: Execute script with sudo
+      ansible.builtin.command: sudo AUTO_INSTALL=y ~/openvpn-install.sh
+
+    - name: Change ownership of client VPN profile
+      ansible.builtin.command: sudo chown ubuntu:ubuntu ~/client.ovpn
+
+    - name: Copy OVPN file to local storage
+      ansible.builtin.fetch:
+        src: ~/client.ovpn
+        dest: ./client.ovpn
+        flat: yes

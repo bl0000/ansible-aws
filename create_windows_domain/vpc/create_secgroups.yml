@@ -33,3 +33,19 @@
             cidr_ip: '0.0.0.0/0'
         state: present
       register: public_subnet
+
+    - name: Allow OpenVPN SG
+      ec2_group:
+        name: Allow OpenVPN
+        description: Allows UDP/1194 inbound from anywhere
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: udp
+            ports: 1194
+            cidr_ip: '0.0.0.0/0'
+        state: present
+      register: public_subnet
+
+
+

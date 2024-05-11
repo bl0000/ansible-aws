@@ -14,3 +14,7 @@ ansible-inventory -i all.aws_ec2.yml --graph
 
 Run playbook on EC2 instance (only tested with one but should work with multiple), uses SSH keypair:
 ansible-playbook -u ubuntu -i demo.aws_ec2.yml temp_playbook.yml --key-file "~/.ssh/windows_domain_keypair.pem" 
+
+Connect to VPN using nmcli:
+nmcli connection import type openvpn file client.ovpn
+nmcli connection up client
