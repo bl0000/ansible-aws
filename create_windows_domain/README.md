@@ -2,7 +2,7 @@ My first collection of playbooks - creates a Windows Test Environment within AWS
 
 End goal:
 
-<img src="/images/Windows_Test_Environment_AWS.png">
+<img src="images/Windows_Test_Environment_AWS.png">
 
 NOTE: Definitely need to streamline the defined variables to avoid repeating them!
 
