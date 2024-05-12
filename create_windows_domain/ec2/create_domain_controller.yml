@@ -6,6 +6,10 @@
   vars:
     vpc_name: "windows_domain"
     region: "eu-west-2"
+    script: |
+      <powershell>
+      New-Item "C:\winrm-setup-will-go-here.txt" -ItemType file
+      </powershell>
 
   tasks:
     - name: Fetch VPC information
@@ -48,11 +52,14 @@
         name: "dc01"
         image_id: ami-04ae4ddfe3f32eb6e
         wait: yes
-        instance_type: t2.small
+        instance_type: t2.medium
         region: "{{ region }}"
         vpc_subnet_id: "{{ priv_subnet_id }}"
         security_group: "{{ sg_rdp_id }}"
+        network:
+          assign_public_ip: false
         key_name: windows_domain_keypair
+        user_data: "{{ script }}" 
         tags:
           Name: dc01
           Role: domain_controller

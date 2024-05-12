@@ -1,0 +1,11 @@
+---
+- name: Delete Windows Domain Controllers (EC2)
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Delete domain controllers using the tag "Role"
+      amazon.aws.ec2_instance:
+        state: terminated
+        filters:
+          tag:Role: domain_controller
