@@ -44,3 +44,19 @@
             cidr_ip: '0.0.0.0/0'
         state: absent
 
+    - name: Delete "Allow RDP" SG
+      ec2_group:
+        name: Allow RDP
+        description: Allows RDP from anywhere
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: udp
+            ports: 3389
+            cidr_ip: '0.0.0.0/0'
+
+          - proto: tcp
+            ports: 3389
+            cidr_ip: '0.0.0.0/0'
+        state: absent
+

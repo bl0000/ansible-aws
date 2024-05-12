@@ -32,7 +32,6 @@
             ports: 22
             cidr_ip: '0.0.0.0/0'
         state: present
-      register: public_subnet
 
     - name: Allow OpenVPN SG
       ec2_group:
@@ -45,7 +44,20 @@
             ports: 1194
             cidr_ip: '0.0.0.0/0'
         state: present
-      register: public_subnet
 
-
+    - name: Allow RDP SG
+      ec2_group:
+        name: Allow RDP
+        description: Allows RDP from anywhere
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: udp
+            ports: 3389
+            cidr_ip: '0.0.0.0/0'
+          
+          - proto: tcp
+            ports: 3389
+            cidr_ip: '0.0.0.0/0'
+        state: present
 
