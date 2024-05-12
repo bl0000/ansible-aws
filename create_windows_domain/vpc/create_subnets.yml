@@ -52,6 +52,16 @@
           Name: "windomain_igw"
       register: igw
 
+    - name: Create NAT GW
+      ec2_vpc_nat_gateway:
+        region: "{{ region }}"
+        subnet_id: "{{ public_subnet.subnet.id }}"
+        state: present
+        tags:
+          Name: "windomain_natgw"
+        if_exist_do_not_create: true
+      register: natgw
+
     - name: Create public RT
       ec2_vpc_route_table:
         vpc_id: "{{ vpc_id }}"
@@ -63,4 +73,16 @@
             gateway_id: "{{ igw.gateway_id }}"
         tags:
           Name: "public_rt"
-    
+  
+    - name: Create private RT
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        subnets:
+          - "{{ private_subnet.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ natgw.nat_gateway_id }}"
+        tags:
+          Name: "private_rt"
+  

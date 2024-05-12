@@ -4,7 +4,7 @@
 
   tasks:
     - name: Download Github script
-    ansible.builtin.command: curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+      ansible.builtin.command: curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
 
     - name: Make script executable
       ansible.builtin.command: chmod +x ~/openvpn-install.sh

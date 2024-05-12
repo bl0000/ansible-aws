@@ -20,6 +20,61 @@
       loop: "{{ vpcs_info.vpcs }}"
       when: (item.tags.Name | default('No Name')) == 'windows_domain'
 
+    - name: Find Public Subnet ID
+      ec2_vpc_subnet:
+        vpc_id: "{{ vpc_id }}"
+        cidr: "{{ public_subnet_cidr }}"
+        region: "{{ region }}"
+        state: present
+        map_public: yes
+        resource_tags:
+          Name: "Public_Subnet"
+      register: public_subnet
+
+    - name: Find NAT GW ID
+      ec2_vpc_nat_gateway:
+        region: "{{ region }}"
+        subnet_id: "{{ public_subnet.subnet.id }}"
+        state: present
+        tags:
+          Name: "windomain_natgw"
+        if_exist_do_not_create: true
+      register: natgw
+ 
+    - name: Delete NAT GW and release Elastic IP, wait for deletion
+      ec2_vpc_nat_gateway:
+        region: "{{ region }}"
+        nat_gateway_id: "{{ natgw.nat_gateway_id }}"
+        state: absent
+        release_eip: true
+        wait: true
+        wait_timeout: 500
+
+    - name: Delete public RT
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "public_rt"
+
+    - name: Delete private RT
+      ec2_vpc_route_table:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "private_rt"
+
+    - name: Delete IGW
+      ec2_vpc_igw:
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "windomain_igw"
+      register: igw
+
     - name: Delete Public Subnet
       ec2_vpc_subnet:
         vpc_id: "{{ vpc_id }}"
@@ -40,20 +95,4 @@
         resource_tags:
           Name: "Private_Subnet"
 
-    - name: Delete IGW
-      ec2_vpc_igw:
-        vpc_id: "{{ vpc_id }}"
-        region: "{{ region }}"
-        state: absent
-        tags:
-          Name: "windomain_igw"
-      register: igw
-
-    - name: Delete public RT
-      ec2_vpc_route_table:
-        vpc_id: "{{ vpc_id }}"
-        region: "{{ region }}"
-        state: absent
-        tags:
-          Name: "public_rt"
 
