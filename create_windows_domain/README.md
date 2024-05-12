@@ -17,4 +17,5 @@ ansible-playbook -u ubuntu -i demo.aws_ec2.yml temp_playbook.yml --key-file "~/.
 
 Connect to VPN using nmcli:
 nmcli connection import type openvpn file client.ovpn
+
 nmcli connection up client

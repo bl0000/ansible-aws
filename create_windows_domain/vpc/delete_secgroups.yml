@@ -32,4 +32,15 @@
             ports: 22
             cidr_ip: '0.0.0.0/0'
         state: absent
-      register: public_subnet
+
+    - name: Delete "Allow OpenVPN" SG
+      ec2_group:
+        name: Allow OpenVPN
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: udp
+            ports: 1194
+            cidr_ip: '0.0.0.0/0'
+        state: absent
+
