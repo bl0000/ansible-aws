@@ -1,5 +1,6 @@
 ---
-- name: Create Windows Domain Controller (EC2 instance)
+- name: Create Windows Domain Controller (EC2 instance). i
+  #Configures WinRM for HTTPS with Self-Signed Cert, enables CredSSP (preferred over basic auth and do not have Kerberos available yet). Deletes default WinRM listener(s).
   hosts: localhost
   gather_facts: no
 
@@ -8,7 +9,15 @@
     region: "eu-west-2"
     script: |
       <powershell>
-      New-Item "C:\winrm-setup-will-go-here.txt" -ItemType file
+      $hostName = $env:COMPUTERNAME
+      $hostIP=(Get-NetAdapter| Get-NetIPAddress).IPv4Address|Out-String
+      $srvCert = New-SelfSignedCertificate -DnsName $hostName,$hostIP -CertStoreLocation Cert:\LocalMachine\My
+      Enable-PSRemoting -Force
+      Get-ChildItem wsman:\localhost\Listener\ | Where-Object -Property Keys -like 'Transport=HTTP*' | Remove-Item -Recurse
+      New-Item -Path WSMan:\localhost\Listener\ -Transport HTTPS -Address * -CertificateThumbPrint $srvCert.Thumbprint -Force
+      New-NetFirewallRule -Displayname 'WinRM - Powershell remoting HTTPS-In' -Name 'WinRM - Powershell remoting HTTPS-In' -Profile Any -LocalPort 5986 -Protocol TCP
+      Enable-WSManCredSSP -Role Server -Force
+      Restart-Service WinRM
       </powershell>
 
   tasks:
@@ -46,16 +55,24 @@
         sg_rdp_id: "{{ item.group_id }}"
       loop: "{{ sg_info.security_groups }}"
       when: item.group_name == "Allow RDP"
+    
+    - name: Get SG ID for Allow WinRM
+      set_fact:
+        sg_winrm_id: "{{ item.group_id }}"
+      loop: "{{ sg_info.security_groups }}"
+      when: item.group_name == "Allow WinRM over HTTPS"
+
 
     - name: Create EC2 server
       amazon.aws.ec2_instance:
         name: "dc01"
         image_id: ami-04ae4ddfe3f32eb6e
         wait: yes
+        state: running
         instance_type: t2.medium
         region: "{{ region }}"
         vpc_subnet_id: "{{ priv_subnet_id }}"
-        security_group: "{{ sg_rdp_id }}"
+        security_groups: ["{{ sg_rdp_id }}", "{{ sg_winrm_id }}"]
         network:
           assign_public_ip: false
         key_name: windows_domain_keypair
@@ -63,3 +80,29 @@
         tags:
           Name: dc01
           Role: domain_controller
+      register: ec2
+
+    - name: get the Administrator password
+      community.aws.ec2_win_password:
+        instance_id: "{{ ec2.instance_ids[0] }}"
+        region: "{{ region }}"
+        key_file: "~/.ssh/windows_domain_keypair.pem"
+      register: dc01_pw
+
+    - name: Add the instance to inventory file
+      blockinfile:
+        path: windows_inv
+        block: |
+          [dcs]
+          {{ item.private_ip }}
+
+          [dcs:vars]
+          ansible_port=5986
+          ansible_user=Administrator
+          ansible_password={{ dc01_pw.win_password }}
+          ansible_connection=winrm
+          ansible_winrm_transport=credssp
+          ansible_winrm_scheme=https
+          ansible_winrm_server_cert_validation=ignore
+      loop: "{{ ec2.instances }}"
+      when: ec2.instances is defined

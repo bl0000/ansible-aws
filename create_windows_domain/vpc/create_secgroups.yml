@@ -61,3 +61,14 @@
             cidr_ip: '0.0.0.0/0'
         state: present
 
+    - name: Allow WinRM
+      ec2_group:
+        name: Allow WinRM over HTTPS
+        description: Allows TCP/5986 from anywhere
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: tcp
+            ports: 5986
+            cidr_ip: '0.0.0.0/0'
+        state: present
